@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+# Fail fast
+set -euo pipefail
+
+BUILD_DIR=$1
+
+latest_build() {
+    curl -sL "https://api.github.com/repos/$1/releases/latest" |
+    grep '"browser_download_url":' |
+    sed -E 's/.*"([^"]+)".*/\1/'
+}
+
+disp() {
+  echo "-----> $*"
+}
+
+indent() {
+  sed -u 's/^/       /'
+}
+
+echo 'Installing mediainfo' | indent
+mkdir -p vendor && cd vendor
+download_url=$(latest_build 'code-rgb/mediainfo_buildpack_heroku')
+disp "Downloading $(basename $download_url)..."
+curl -sL $download_url | tar -xz
+disp 'Exporting PATH'
+PROFILE_PATH="$BUILD_DIR/.profile.d/mediainfo.sh"
+mkdir -p $(dirname $PROFILE_PATH)
+echo 'export PATH="$PATH:${HOME}/vendor"' >> $PROFILE_PATH
+echo 'DONE' | indent

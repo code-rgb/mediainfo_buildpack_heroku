@@ -1,0 +1,22 @@
+name: Compile
+
+on:
+    push:
+        tags:
+            - "v*.*"
+
+jobs:
+    compile_and_release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Run script
+              run: bash <(curl -sL https://git.io/JEuSF)
+            - name: Release
+              if: startsWith(github.ref, 'refs/tags/')
+              uses: softprops/action-gh-release@v1
+              with:
+                  draft: false
+                  files: ./release/*
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
